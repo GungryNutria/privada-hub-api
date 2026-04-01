@@ -31,17 +31,13 @@ Edita `.env` con tus credenciales de PostgreSQL.
 CREATE DATABASE privada_hub;
 ```
 
-### 4. Inicializar tablas (solo primera vez)
-
-```bash
-npm run db:init
-```
-
-### 5. Ejecutar en desarrollo
+### 4. Ejecutar en desarrollo
 
 ```bash
 npm run start:dev
 ```
+
+Las tablas se crean automáticamente con `synchronize: true` en desarrollo.
 
 El servidor corre en `http://localhost:3000`
 
@@ -61,15 +57,9 @@ CORS_ORIGIN=https://tu-frontend-url
 JWT_SECRET=un-secreto-muy-seguro
 ```
 
-### 2. Inicializar base de datos
+### 2. Crear tablas manualmente
 
-Después del primer deploy, ejecuta:
-
-```bash
-npm run db:init
-```
-
-O manualmente con SQL:
+Después del primer deploy, ejecuta este SQL en tu base de datos:
 
 ```sql
 CREATE TABLE houses (
@@ -100,10 +90,10 @@ WHERE status = 'active';
 
 ### 3. Crear casas (bulk)
 
-Para crear 300 casas de una vez:
+Para crear 300 casas de una vez con PINs aleatorios:
 
 ```bash
-curl -X POST http://tu-api/api/houses/bulk \
+curl -X POST https://tu-api/api/houses/bulk \
   -H "Content-Type: application/json" \
   -d '{"count": 300}'
 ```
@@ -122,7 +112,7 @@ curl -X POST http://tu-api/api/houses/bulk \
 ### Casas
 
 - `GET /api/houses` - Listar todas las casas
-- `POST /api/houses` - Crear una casa
+- `POST /api/houses` - Registrar una casa
 - `POST /api/houses/bulk` - Crear múltiples casas
 - `PUT /api/houses/:id` - Actualizar casa
 - `POST /api/houses/:id/reset-pin` - Resetear PIN
