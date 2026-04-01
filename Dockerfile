@@ -2,9 +2,6 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Force development mode for build to install devDependencies
-ENV NODE_ENV=development
-
 COPY package*.json ./
 RUN npm install
 
