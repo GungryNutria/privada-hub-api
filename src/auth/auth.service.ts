@@ -7,7 +7,7 @@ interface LoginDto {
   pin: string;
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   success: boolean;
   house: {
     id: number;
