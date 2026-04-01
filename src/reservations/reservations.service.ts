@@ -54,7 +54,7 @@ export class ReservationsService {
   }
 
   async create(dto: CreateReservationDto): Promise<Reservation> {
-    const reservationDate = new Date(dto.date);
+    const reservationDate = new Date(dto.date + 'T00:00:00');
     
     // Validar que la fecha no sea en el pasado
     const today = new Date();
@@ -70,21 +70,11 @@ export class ReservationsService {
     const reservationMonth = reservationDate.getMonth();
     const reservationYear = reservationDate.getFullYear();
 
-    // Permitir reservas solo en el mes actual o siguiente (si estamos cerca del fin de mes)
+    // Permitir reservas solo en el mes actual
     const isCurrentMonth = reservationMonth === currentMonth && reservationYear === currentYear;
-    const isNextMonth = reservationMonth === (currentMonth + 1) % 12 && 
-                        (reservationYear === currentYear || (currentMonth === 11 && reservationYear === currentYear + 1));
 
-    if (!isCurrentMonth && !isNextMonth) {
-      // Verificar si es el mismo mes que el actual
-      const lastDayOfCurrentMonth = new Date(currentYear, currentMonth + 1, 0);
-      const daysRemaining = lastDayOfCurrentMonth.getDate() - today.getDate();
-      
-      if (daysRemaining <= 7 && isNextMonth) {
-        // Permitir reservar el siguiente mes si faltan 7 días o menos
-      } else {
-        throw new BadRequestException('Solo se puede reservar dentro del mes en curso');
-      }
+    if (!isCurrentMonth) {
+      throw new BadRequestException('Solo se puede reservar dentro del mes en curso');
     }
 
     // Verificar que no haya otra reservación activa para esa fecha
