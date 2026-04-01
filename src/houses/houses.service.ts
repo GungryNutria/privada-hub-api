@@ -30,10 +30,15 @@ export class HousesService {
   }
 
   async create(houseData: Partial<House>): Promise<House> {
+    // Verificar que el número de lote esté presente
+    if (houseData.lotNumber === undefined) {
+      throw new BadRequestException('El número de lote es requerido');
+    }
+
     // Verificar si ya existe el número de lote
     const existing = await this.findByLotNumber(houseData.lotNumber);
     if (existing) {
-      throw new BadRequestException(`Ya existe una casa con el lote ${houseData.lotNumber}`);
+      throw new BadRequestException(`La casa ${houseData.lotNumber} ya está registrada. Si ya tienes cuenta, intenta iniciar sesión.`);
     }
 
     const house = this.housesRepository.create(houseData);

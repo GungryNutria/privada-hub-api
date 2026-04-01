@@ -21,7 +21,7 @@ import { AuthModule } from './auth/auth.module';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'privada_hub',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: process.env.NODE_ENV !== 'production', // true en desarrollo
     }),
     
     HousesModule,
