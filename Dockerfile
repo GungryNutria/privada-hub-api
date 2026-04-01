@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Force development mode for build to install devDependencies
+ENV NODE_ENV=development
+
 COPY package*.json ./
 RUN npm install
 
@@ -13,12 +16,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+ENV NODE_ENV=production
+
 COPY package*.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
