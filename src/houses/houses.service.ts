@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -30,6 +30,12 @@ export class HousesService {
   }
 
   async create(houseData: Partial<House>): Promise<House> {
+    // Verificar si ya existe el número de lote
+    const existing = await this.findByLotNumber(houseData.lotNumber);
+    if (existing) {
+      throw new BadRequestException(`Ya existe una casa con el lote ${houseData.lotNumber}`);
+    }
+
     const house = this.housesRepository.create(houseData);
     
     // Generar PIN aleatorio si no se proporciona
@@ -43,11 +49,41 @@ export class HousesService {
     return this.housesRepository.save(house);
   }
 
+  async createBulk(count: number, prefix?: string): Promise<{ message: string; count: number }> {
+    const houses: Partial<House[]> = [];
+    
+    for (let i = 1; i <= count; i++) {
+      const lotNumber = prefix ? parseInt(`${prefix}${i}`) : i;
+      
+      // Verificar si ya existe
+      const existing = await this.findByLotNumber(lotNumber);
+      if (existing) continue;
+
+      const rawPin = this.generateRandomPin();
+      const hashedPin = await bcrypt.hash(rawPin, 10);
+
+      houses.push({
+        lotNumber,
+        ownerName: `Casa ${lotNumber}`,
+        pin: hashedPin,
+        active: true,
+      });
+    }
+
+    await this.housesRepository.save(houses);
+    
+    return {
+      message: `${houses.length} casas creadas exitosamente`,
+      count: houses.length,
+    };
+  }
+
   async update(id: number, houseData: Partial<House>): Promise<House> {
     const house = await this.findOne(id);
     
+    // No permitir actualizar el PIN directamente por update
     if (houseData.pin) {
-      houseData.pin = await bcrypt.hash(houseData.pin, 10);
+      delete houseData.pin;
     }
     
     Object.assign(house, houseData);
@@ -67,6 +103,21 @@ export class HousesService {
     return true;
   }
 
+  async resetPin(id: number, newPin?: string): Promise<{ success: boolean; newPin?: string }> {
+    const house = await this.findOne(id);
+    
+    const pin = newPin || this.generateRandomPin();
+    house.pin = await bcrypt.hash(pin, 10);
+    
+    await this.housesRepository.save(house);
+    
+    // Solo retornar el PIN si fue generado automáticamente
+    return {
+      success: true,
+      ...(newPin ? {} : { newPin: pin }),
+    };
+  }
+
   async validatePin(lotNumber: number, pin: string): Promise<House | null> {
     const house = await this.findByLotNumber(lotNumber);
     if (!house || !house.active) {
@@ -79,7 +130,8 @@ export class HousesService {
 
   async remove(id: number): Promise<void> {
     const house = await this.findOne(id);
-    await this.housesRepository.softRemove(house);
+    house.active = false;
+    await this.housesRepository.save(house);
   }
 
   private generateRandomPin(): string {

@@ -4,7 +4,6 @@ import { ConfigModule } from '@nestjs/config';
 import { HousesModule } from './houses/houses.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { AuthModule } from './auth/auth.module';
-import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -22,13 +21,12 @@ import { SeedModule } from './seed/seed.module';
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'privada_hub',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production', // true en desarrollo
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     
     HousesModule,
     ReservationsModule,
     AuthModule,
-    SeedModule,
   ],
 })
 export class AppModule {}
