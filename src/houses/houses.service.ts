@@ -50,7 +50,7 @@ export class HousesService {
   }
 
   async createBulk(count: number, prefix?: string): Promise<{ message: string; count: number }> {
-    const houses: Partial<House[]> = [];
+    const housesToCreate: { lotNumber: number; ownerName: string; pin: string; active: boolean }[] = [];
     
     for (let i = 1; i <= count; i++) {
       const lotNumber = prefix ? parseInt(`${prefix}${i}`) : i;
@@ -62,7 +62,7 @@ export class HousesService {
       const rawPin = this.generateRandomPin();
       const hashedPin = await bcrypt.hash(rawPin, 10);
 
-      houses.push({
+      housesToCreate.push({
         lotNumber,
         ownerName: `Casa ${lotNumber}`,
         pin: hashedPin,
@@ -70,11 +70,13 @@ export class HousesService {
       });
     }
 
-    await this.housesRepository.save(houses);
+    if (housesToCreate.length > 0) {
+      await this.housesRepository.insert(housesToCreate);
+    }
     
     return {
-      message: `${houses.length} casas creadas exitosamente`,
-      count: houses.length,
+      message: `${housesToCreate.length} casas creadas exitosamente`,
+      count: housesToCreate.length,
     };
   }
 
