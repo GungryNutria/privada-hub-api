@@ -1,5 +1,4 @@
-# Build stage
-FROM node:20-alpine AS builder
+FROM node:22
 
 WORKDIR /app
 
@@ -7,21 +6,9 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-RUN npx nest build
 
-# Production stage
-FROM node:20-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install --omit=dev
-
-COPY --from=builder /app/dist ./dist
-
-ENV NODE_ENV=production
-ENV PORT=3000
+RUN npm run build
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/main"]
