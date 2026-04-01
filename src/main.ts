@@ -9,8 +9,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   
   // Habilitar CORS para el frontend
+  const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: corsOrigin.split(',').map(s => s.trim()),
     credentials: true,
   });
   
